@@ -1,0 +1,48 @@
+<div class="modal fade" id="assignModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <form method="POST" id="assign-form">
+                {% csrf_token %}
+                <div class="modal-header">
+                    <h5 class="modal-title">Assign Subject & Teacher</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="mb-3">
+                        <label>Subject Name:</label>
+                        <input type="text" name="subject" class="form-control" value="{{ form.subject.value }}" required>
+                    </div>
+                    <div class="mb-3">
+                        <label>Teacher Name:</label>
+                        <input type="text" name="teacher" class="form-control" value="{{ form.teacher.value }}" required>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="submit" class="btn btn-success">Save</button>
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<script>
+document.addEventListener("DOMContentLoaded", function () {
+    const form = document.getElementById("assign-form");
+    if (form) {
+        form.addEventListener("submit", function (e) {
+            e.preventDefault();
+            fetch(window.location.pathname, {
+                method: 'POST',
+                body: new FormData(form)
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    location.reload();  
+                }
+            });
+        });
+    }
+});
+</script>

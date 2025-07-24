@@ -1,0 +1,82 @@
+{% extends 'base.html' %}
+{% load custom_filters %}
+{% block content %}
+
+<div class="container mt-4">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <a href="{% url 'logout' %}" class="btn btn-danger">Logout</a>
+        <h4 class="text-center mb-4">Manage Timetable for Class: {{ timetable.class_name }}</h4>
+
+        <a href="{% url 'home' %}" class="btn btn-primary">Back</a>
+    </div>
+
+    <table class="table table-bordered text-center align-middle">
+        <thead class="table-light">
+            <tr>
+                <th>Weekdays</th>
+                {% for label, start, end in header_labels %}
+                    <th>
+                        {{ label }}<br>
+                        <small>{{ start }} - {{ end }}</small>
+                    </th>
+                {% endfor %}
+            </tr>
+        </thead>
+        <tbody>
+            {% for day in days %}
+                <tr>
+                    <td><strong>{{ day }}</strong></td>
+                    {% for slot in data|get_item:day %}
+                        <td data-id="{{ slot.id }}" class="slot-cell" style="cursor:pointer;">
+                            {% if slot.is_break %}
+                                Break
+                            {% else %}
+                                {{ slot.subject }}<br><small>{{ slot.teacher }}</small>
+                            {% endif %}
+                        </td>
+                    {% endfor %}
+                </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+
+
+<div id="modal-placeholder"></div>
+
+
+<script>
+document.querySelectorAll('.slot-cell').forEach(cell => {
+    cell.addEventListener('click', () => {
+        const id = cell.getAttribute('data-id');
+        fetch(`/assign/${id}/`)
+            .then(response => response.json())
+            .then(data => {
+                document.getElementById('modal-placeholder').innerHTML = data.html;
+
+                const modal = new bootstrap.Modal(document.getElementById('assignModal'));
+                modal.show();
+
+                const form = document.getElementById("assign-form");
+                form.addEventListener("submit", function (e) {
+                    e.preventDefault();
+                    fetch(`/assign/${id}/`, {
+                        method: 'POST',
+                        body: new FormData(form)
+                    })
+                    .then(res => res.json())
+                    .then(data => {
+                        if (data.success) {
+                            location.reload();
+                        } else {
+                            document.getElementById('modal-placeholder').innerHTML = data.html;
+                        }
+                    });
+                });
+            });
+    });
+});
+</script>
+
+
+{% endblock %}
